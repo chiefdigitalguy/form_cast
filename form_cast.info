@@ -1,0 +1,4 @@
+name = Form Cast
+description = Form API, entity data comes from endpoint to be displayed in a block.
+core = 7.x
+package = Digital Libertines
