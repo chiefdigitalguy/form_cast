@@ -1,0 +1,181 @@
+<?php
+
+/**
+ * @file
+ * This function will create a page/menu link
+ */
+
+function tu_form_cast_menu(){
+    $items = array();
+    $items['admin/config/tu-form-cast'] = array(
+        'page callback' => 'drupal_get_form',
+        'title' => t('TU Form Cast'),
+        'access callback' => TRUE,
+        'page arguments' => array('tu_form_cast_form'),
+        'description' => 'This module will capture data using the Form API, the cast the entity data from an endpoint to be displayed in a block.',
+    );
+
+    $items['admin/config/tu-form-cast/verify'] = array(
+        '#title' => ' ',
+        'description' => ' ',
+        'access callback' => TRUE,
+        'type' => MENU_CALLBACK,
+        'page callback' => 'tu_form_cast_verify'
+    );
+
+    return $items;
+}
+
+function tu_form_cast_verify(){
+    $query = new EntityFieldQuery();
+    $form_cast_nids = $query->entityCondition('entity_type', 'node')
+                            ->entityCondition('bundle', 'form_cast_user')
+                            ->propertyCondition('status', 1)
+                            ->execute();
+
+    $nids = array();
+    foreach ($form_cast_nids['node'] as $fcu_item){
+    
+    $nids .= $fcu_item->nid;
+        
+
+    }
+    print "<pre>";
+    print_r($nids);
+    print "</pre>";
+    die;
+
+    
+    // $test_msg = array(
+    //     'Hi' => 'Hello',
+    //     'There' => 'Therrr'
+        
+    // );
+
+    // $test_msg = drupal_json_output($test_msg);
+
+    return $form_cast_query;
+}
+
+function tu_form_cast_form($form, &$form_state){
+    $degree_track_options = array(
+            'ud' => 'Undergrad Degree', 
+            'pg' => 'Post Grad Courses',
+            'cc' => 'Certificate Courses'
+    );
+   
+
+    $form['form_cast_interest'] = array(
+        '#type' => 'select',
+        '#title' => t('What Are You Looking For Today?'),
+        '#options' => $degree_track_options,
+        '#description' => 'Choose an option from the drop down.'
+
+    );
+
+    $form['form_cast_dob'] = array(
+        '#type' => 'date',
+        '#title' => t('Tell Us The Date Of Birth For You Or Prospective Student'),
+        '#description' => 'Click On A Date',
+        '#required' => TRUE,
+        '#date_format' => 'd-m-Y H:i',
+        '#default_value' => array(
+            'year' => 2019,
+            'month' => 4,
+            'day' => 1,
+        ),
+       
+    );
+
+    $form['form_cast_name'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Your Full Name'),
+        '#description' => 'Enter First (space) Last Name',
+        '#required' => TRUE,
+    );
+
+    $form['form_cast_email'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Email Address'),
+        '#description' => 'Enter Your Email Address',
+        '#required' =>  TRUE,
+
+    );
+
+    $form['form_cast_four_social'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Last 4 Of Your Social Sec #'),
+        '#description' => 'Enter The Last 4 Digits Of Your SS#',
+        '#required' =>  TRUE,
+    );
+
+    $form['form_cast_name_search'] = array(
+        '#title' => t('Have You Registered With Us Before?'),
+        '#description' => 'Enter The Last Four Of Your Social',
+        '#required' => FALSE,
+        '#type' => 'textfield',
+        '#ajax' => array(
+            'callback' => 'tu_form_cast_verify'
+        ),
+
+    );
+
+    $form['submit'] = array(
+        '#type' => 'submit',
+        '#value' => 'Request Info'
+    );
+    return $form;
+}
+
+function tu_form_cast_form_validate($form, &$form_state){
+    if(strlen($form_state['values']['form_cast_four_social'])!== 4){
+        form_set_error('form_cast_four_social', t('You Need To Enter 4 Digits Exactly.'));
+    }
+    
+    if (!filter_var($form_state['values']['form_cast_email'], FILTER_VALIDATE_EMAIL)){
+        form_set_error('form_cast_email', t('Please Enter A Valid Email Address.'));
+    }
+    
+    if (!preg_match('/^[a-zA-Z ]*$/', $form_state['values']['form_cast_name'])){
+        form_set_error('form_cast_name', t('Only Letters And Spaces Allowed.'));
+    }
+
+}
+
+function tu_form_cast_form_submit($form_id, &$form_state){
+    // $_SESSION['values'] = $form_state['values'];
+    tu_form_cast_save_create($form_state);
+
+}
+
+function tu_form_cast_save_create($user_info){
+    module_load_include('inc', 'node', 'node.pages');
+    $fcu_entity = new stdClass();
+
+    $fcu_entity = entity_create('node', array(
+        'type' => 'form_cast_user',
+        'status' => 1,
+        'comment' => 0,
+        'promote' => 0,
+    
+    ));
+
+    $fcu_wrapper = entity_metadata_wrapper('node', $fcu_entity);
+    $fcu_wrapper->title->set($user_info['values']['form_cast_name']);
+    $fcu_wrapper->field_form_cast_full_name->set($user_info['values']['form_cast_name']);
+    $fcu_wrapper->field_form_cast_dob->set($user_info['values']['form_cast_dob']['month'] . '-' . $user_info['values']['form_cast_dob']['day'] . '-' . $user_info['values']['form_cast_dob']['year']);
+
+    $fcu_wrapper->field_form_cast_email->set($user_info['values']['form_cast_email']);
+    $fcu_wrapper->field_form_cast_four_social->set($user_info['values']['form_cast_four_social']);
+    $fcu_wrapper->field_form_cast_plain_text_date->set(strtotime($user_info['values']['form_cast_dob']['month'] . '-' . $user_info['values']['form_cast_dob']['day'] . '-' . $user_info['values']['form_cast_dob']['year']));
+    $fcu_wrapper->field_form_cast_interest->set($user_info['values']['form_cast_interest']);
+
+    // entity_save('node', $fcu_entity);
+    $fcu_wrapper->save(true);
+
+    drupal_set_message('Thank You , Your Entry Was Received');
+    unset($_SESSION['form']);
+    drupal_goto();
+}
+
+
