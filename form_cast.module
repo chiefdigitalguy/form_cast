@@ -9,7 +9,7 @@ function form_cast_menu(){
     $items = array();
     $items['admin/config/form-cast'] = array(
         'page callback' => 'drupal_get_form',
-        'title' => t('TU Form Cast'),
+        'title' => t('Form Cast'),
         'access callback' => TRUE,
         'page arguments' => array('form_cast_form'),
         'description' => 'This module will capture data using the Form API, the cast the entity data from an endpoint to be displayed in a block.',
@@ -25,6 +25,24 @@ function form_cast_menu(){
 
     return $items;
 }
+
+/**
+ * Implements hook_node_info().
+ */
+function form_cast_feature_node_info() {
+    $items = array(
+      'form_cast_user' => array(
+        'name' => t('Form Cast User'),
+        'base' => 'node_content',
+        'description' => '',
+        'has_title' => '1',
+        'title_label' => t('Title'),
+        'help' => '',
+      ),
+    );
+    drupal_alter('node_info', $items);
+    return $items;
+  }
 
 function form_cast_verify(){
     $query = new EntityFieldQuery();
@@ -163,7 +181,7 @@ function form_cast_save_create($user_info){
     $fcu_wrapper = entity_metadata_wrapper('node', $fcu_entity);
     $fcu_wrapper->title->set($user_info['values']['form_cast_name']);
     $fcu_wrapper->field_form_cast_full_name->set($user_info['values']['form_cast_name']);
-    $fcu_wrapper->field_form_cast_dob->set($user_info['values']['form_cast_dob']['month'] . '-' . $user_info['values']['form_cast_dob']['day'] . '-' . $user_info['values']['form_cast_dob']['year']);
+    //$fcu_wrapper->field_form_cast_dob->set($user_info['values']['form_cast_dob']['month'] . '-' . $user_info['values']['form_cast_dob']['day'] . '-' . $user_info['values']['form_cast_dob']['year']);
 
     $fcu_wrapper->field_form_cast_email->set($user_info['values']['form_cast_email']);
     $fcu_wrapper->field_form_cast_four_social->set($user_info['values']['form_cast_four_social']);
