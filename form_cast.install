@@ -536,5 +536,5 @@ function form_cast_uninstall(){
     
      //delete user_entry content type and nodes
     node_delete_multiple($nids);
-    node_type_delete('form-cast-user');
+    node_type_delete('form_cast_user');
 }
