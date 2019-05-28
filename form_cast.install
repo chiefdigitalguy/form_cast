@@ -139,8 +139,10 @@ function form_cast_install() {
     'type' => 'text',
     );
 
-    return $field_bases;
-
+    //return $field_bases;
+    foreach ( $field_bases as $field){
+        field_create_field($field);
+    }
 //FIELD INSTANCES   
     $field_instances = array();
   
@@ -514,5 +516,25 @@ function form_cast_install() {
     t('Form Cast Interest');
     t('Form Cast Plain Text Date');
   
-    return $field_instances;
+    //return $field_instances;
+
+    foreach($field_instances as $instance) {
+        $instance['entity_type'] = 'node';
+        $instance['bundle'] = 'form_cast_user';
+
+        field_create_instance($instance);
+    }
+}
+
+function form_cast_uninstall(){
+    $sql = 'SELECT nid FROM {node} n WHERE n.type = :type';
+     $result = db_query($sql, array(':type' => 'user_entry'));
+     $nids = array();
+     foreach ($result as $row) {
+       $nids[] = $row->nid;
+     }
+    
+     //delete user_entry content type and nodes
+    node_delete_multiple($nids);
+    node_type_delete('form-cast-user');
 }
