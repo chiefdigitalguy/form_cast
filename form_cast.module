@@ -5,28 +5,28 @@
  * This function will create a page/menu link
  */
 
-function tu_form_cast_menu(){
+function form_cast_menu(){
     $items = array();
-    $items['admin/config/tu-form-cast'] = array(
+    $items['admin/config/form-cast'] = array(
         'page callback' => 'drupal_get_form',
         'title' => t('TU Form Cast'),
         'access callback' => TRUE,
-        'page arguments' => array('tu_form_cast_form'),
+        'page arguments' => array('form_cast_form'),
         'description' => 'This module will capture data using the Form API, the cast the entity data from an endpoint to be displayed in a block.',
     );
 
-    $items['admin/config/tu-form-cast/verify'] = array(
+    $items['admin/config/form-cast/verify'] = array(
         '#title' => ' ',
         'description' => ' ',
         'access callback' => TRUE,
         'type' => MENU_CALLBACK,
-        'page callback' => 'tu_form_cast_verify'
+        'page callback' => 'form_cast_verify'
     );
 
     return $items;
 }
 
-function tu_form_cast_verify(){
+function form_cast_verify(){
     $query = new EntityFieldQuery();
     $form_cast_nids = $query->entityCondition('entity_type', 'node')
                             ->entityCondition('bundle', 'form_cast_user')
@@ -57,7 +57,7 @@ function tu_form_cast_verify(){
     return $form_cast_query;
 }
 
-function tu_form_cast_form($form, &$form_state){
+function form_cast_form($form, &$form_state){
     $degree_track_options = array(
             'ud' => 'Undergrad Degree', 
             'pg' => 'Post Grad Courses',
@@ -115,7 +115,7 @@ function tu_form_cast_form($form, &$form_state){
         '#required' => FALSE,
         '#type' => 'textfield',
         '#ajax' => array(
-            'callback' => 'tu_form_cast_verify'
+            'callback' => 'form_cast_verify'
         ),
 
     );
@@ -127,7 +127,7 @@ function tu_form_cast_form($form, &$form_state){
     return $form;
 }
 
-function tu_form_cast_form_validate($form, &$form_state){
+function form_cast_form_validate($form, &$form_state){
     if(strlen($form_state['values']['form_cast_four_social'])!== 4){
         form_set_error('form_cast_four_social', t('You Need To Enter 4 Digits Exactly.'));
     }
@@ -142,13 +142,13 @@ function tu_form_cast_form_validate($form, &$form_state){
 
 }
 
-function tu_form_cast_form_submit($form_id, &$form_state){
+function form_cast_form_submit($form_id, &$form_state){
     // $_SESSION['values'] = $form_state['values'];
-    tu_form_cast_save_create($form_state);
+    form_cast_save_create($form_state);
 
 }
 
-function tu_form_cast_save_create($user_info){
+function form_cast_save_create($user_info){
     module_load_include('inc', 'node', 'node.pages');
     $fcu_entity = new stdClass();
 
@@ -177,5 +177,3 @@ function tu_form_cast_save_create($user_info){
     unset($_SESSION['form']);
     drupal_goto();
 }
-
-
