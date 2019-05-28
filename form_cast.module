@@ -29,7 +29,7 @@ function form_cast_menu(){
 /**
  * Implements hook_node_info().
  */
-function form_cast_feature_node_info() {
+function form_cast_node_info() {
     $items = array(
       'form_cast_user' => array(
         'name' => t('Form Cast User'),
@@ -181,6 +181,9 @@ function form_cast_save_create($user_info){
     $fcu_wrapper = entity_metadata_wrapper('node', $fcu_entity);
     $fcu_wrapper->title->set($user_info['values']['form_cast_name']);
     $fcu_wrapper->field_form_cast_full_name->set($user_info['values']['form_cast_name']);
+    /**
+     * commented out line below, date data is coming across as a timestamp that needs to be converted first
+     */
     //$fcu_wrapper->field_form_cast_dob->set($user_info['values']['form_cast_dob']['month'] . '-' . $user_info['values']['form_cast_dob']['day'] . '-' . $user_info['values']['form_cast_dob']['year']);
 
     $fcu_wrapper->field_form_cast_email->set($user_info['values']['form_cast_email']);
