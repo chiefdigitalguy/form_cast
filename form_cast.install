@@ -528,7 +528,7 @@ function form_cast_install() {
 
 function form_cast_uninstall(){
     $sql = 'SELECT nid FROM {node} n WHERE n.type = :type';
-     $result = db_query($sql, array(':type' => 'user_entry'));
+     $result = db_query($sql, array(':type' => 'form_cast_user'));
      $nids = array();
      foreach ($result as $row) {
        $nids[] = $row->nid;
