@@ -184,7 +184,7 @@ function form_cast_save_create($user_info){
     /**
      * commented out line below, date data is coming across as a timestamp that needs to be converted first
      */
-    //$fcu_wrapper->field_form_cast_dob->set($user_info['values']['form_cast_dob']['month'] . '-' . $user_info['values']['form_cast_dob']['day'] . '-' . $user_info['values']['form_cast_dob']['year']);
+    $fcu_wrapper->field_form_cast_dob->set(strtotime($user_info['values']['form_cast_dob']['month'] . '-' . $user_info['values']['form_cast_dob']['day'] . '-' . $user_info['values']['form_cast_dob']['year']));
 
     $fcu_wrapper->field_form_cast_email->set($user_info['values']['form_cast_email']);
     $fcu_wrapper->field_form_cast_four_social->set($user_info['values']['form_cast_four_social']);
