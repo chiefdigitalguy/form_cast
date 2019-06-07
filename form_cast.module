@@ -19,7 +19,7 @@ function form_cast_menu(){
         'description' => ' ',
         'access callback' => TRUE,
         'type' => MENU_CALLBACK,
-        'page callback' => 'form_cast_autocomplete',
+        'page callback' => '_form_cast_autocomplete',
         'page arguments' => array(
             4),
     );
@@ -43,25 +43,38 @@ function form_cast_node_info() {
     );
     drupal_alter('node_info', $items);
     return $items;
-  }
+}
 
-function form_cast_autocomplete($string){
-    $query = new EntityFieldQuery();
-    $submitted_data_string = strval($string);
-    $form_cast_nids = $query->entityCondition('entity_type', 'node')
-                            ->entityCondition('bundle', 'form_cast_user')
-                            ->propertyCondition('status', 1)
-                            ->fieldCondition('field_form_cast_four_social', 'value', $submitted_data_string, '=')
-                            ->execute();
-   if($string){
-    print '$string is not empty it equals ';
-    $fc_title->field_form_cast_name = check_plain($form_cast_nids->field_form_cast_name);
-    print_r($fc_title);
-    drupal_json_output($string);
-    }
+function _form_cast_autocomplete($string){
+    
+    if(strlen($string) === 4){
+        $query = new EntityFieldQuery();
+        $submitted_data_string = strval($string);
+        $form_cast_nids = $query->entityCondition('entity_type', 'node')
+                                ->entityCondition('bundle', 'form_cast_user')
+                                ->propertyCondition('status', 1)
+                                ->fieldCondition('field_form_cast_four_social', 'value', $submitted_data_string, '=')
+                                ->execute();
+
+        if($form_cast_nids){
+            $matched_nodes = entity_load('node', array_keys($form_cast_nids['node']));
+            $matched_nids = array_keys($form_cast_nids['node']);
+            $matches = array();
+            foreach ($matched_nodes as $fcn)
+                {
+                    $matches[$fcn->nid] = check_plain($fcn->title);
+                }   
+            
+           drupal_json_output($matches);
+            // print '<pre>';
+            // print_r($matched_nodes);
+            // print '<pre>';
+            // die;
+        }
+    } 
 }
   
-function form_cast_verify_after_post($submitted_data){    
+function _form_cast_verify_after_post($submitted_data){    
     $query = new EntityFieldQuery();
     $submitted_data_string = strval($submitted_data);
     $form_cast_nids = $query->entityCondition('entity_type', 'node')
@@ -69,6 +82,7 @@ function form_cast_verify_after_post($submitted_data){
                             ->propertyCondition('status', 1)
                             ->fieldCondition('field_form_cast_four_social', 'value', $submitted_data_string, '=')
                             ->execute();
+
     if($form_cast_nids){
         $duplicate = TRUE;
     }
@@ -82,6 +96,7 @@ function form_cast_form($form, &$form_state){
             'cc' => 'Certificate Courses'
     );
    
+
     $form['form_cast_interest'] = array(
         '#type' => 'select',
         '#title' => t('What Are You Looking For Today?'),
@@ -132,7 +147,11 @@ function form_cast_form($form, &$form_state){
         '#required' => FALSE,
         '#type' => 'textfield',
         '#id' => 'form_cast_name_search',
+        // '#ajax' => array(
+        //     'callback' => 'form_cast_verify'
+        // ),
         '#autocomplete_path' => 'admin/config/form-cast/verify'
+
     );
 
     $form['submit'] = array(
@@ -155,17 +174,18 @@ function form_cast_form_validate($form, &$form_state){
         form_set_error('form_cast_name', t('Only Letters And Spaces Allowed.'));
     }
 
-    if(form_cast_verify_after_post($form_state['values']['form_cast_four_social'])){
+    if(_form_cast_verify_after_post($form_state['values']['form_cast_four_social'])){
             form_set_error('form_cast_four_social', t('Your Info Is Already In Our System.'));
         }
 }
 
 function form_cast_form_submit($form_id, &$form_state){
 
-    form_cast_save_create($form_state);
+    _form_cast_save_create($form_state);
+
 }
 
-function form_cast_save_create($user_info){
+function _form_cast_save_create($user_info){
     module_load_include('inc', 'node', 'node.pages');
     $fcu_entity = new stdClass();
 
