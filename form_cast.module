@@ -147,9 +147,7 @@ function form_cast_form($form, &$form_state){
         '#required' => FALSE,
         '#type' => 'textfield',
         '#id' => 'form_cast_name_search',
-        // '#ajax' => array(
-        //     'callback' => 'form_cast_verify'
-        // ),
+        // '#ajax' => array('callback' => 'form_cast_verify'),
         '#autocomplete_path' => 'admin/config/form-cast/verify'
 
     );
