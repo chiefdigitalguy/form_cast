@@ -50,15 +50,15 @@ function _form_cast_autocomplete($string){
     if(strlen($string) === 4){
         $query = new EntityFieldQuery();
         $submitted_data_string = strval($string);
-        $form_cast_nids = $query->entityCondition('entity_type', 'node')
+        $fc_results = $query->entityCondition('entity_type', 'node')
                                 ->entityCondition('bundle', 'form_cast_user')
                                 ->propertyCondition('status', 1)
                                 ->fieldCondition('field_form_cast_four_social', 'value', $submitted_data_string, '=')
                                 ->execute();
 
-        if($form_cast_nids){
-            $matched_nodes = entity_load('node', array_keys($form_cast_nids['node']));
-            $matched_nids = array_keys($form_cast_nids['node']);
+        if($fc_results){
+            $matched_nodes = entity_load('node', array_keys($fc_results['node']));
+            $matched_nids = array_keys($fc_results['node']);
             $matches = array();
             foreach ($matched_nodes as $fcn)
                 {
@@ -77,13 +77,13 @@ function _form_cast_autocomplete($string){
 function _form_cast_verify_after_post($submitted_data){    
     $query = new EntityFieldQuery();
     $submitted_data_string = strval($submitted_data);
-    $form_cast_nids = $query->entityCondition('entity_type', 'node')
+    $fc_results = $query->entityCondition('entity_type', 'node')
                             ->entityCondition('bundle', 'form_cast_user')
                             ->propertyCondition('status', 1)
                             ->fieldCondition('field_form_cast_four_social', 'value', $submitted_data_string, '=')
                             ->execute();
 
-    if($form_cast_nids){
+    if($fc_results){
         $duplicate = TRUE;
     }
     return $duplicate;
@@ -147,7 +147,9 @@ function form_cast_form($form, &$form_state){
         '#required' => FALSE,
         '#type' => 'textfield',
         '#id' => 'form_cast_name_search',
-        // '#ajax' => array('callback' => 'form_cast_verify'),
+        // '#ajax' => array(
+        //     'callback' => 'form_cast_verify'
+        // ),
         '#autocomplete_path' => 'admin/config/form-cast/verify'
 
     );
@@ -191,8 +193,7 @@ function _form_cast_save_create($user_info){
         'type' => 'form_cast_user',
         'status' => 1,
         'comment' => 0,
-        'promote' => 0,
-    
+        'promote' => 0,    
     ));
 
     $fcu_wrapper = entity_metadata_wrapper('node', $fcu_entity);
